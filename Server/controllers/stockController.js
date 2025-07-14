@@ -1,6 +1,6 @@
 const Stock = require('../Schemas/stockSchema');
 const { validateId } = require('./authController');
-
+const { CheckBalance } = require('./authController');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const TWELVE_DATA_API_KEY = process.env.TWELVE_DATA_API_KEY;
 
@@ -40,29 +40,35 @@ const buyStock = async (req, res) => {
 
     const { symbol, price, quantity } = req.body;
     const totalPrice = quantity * price;
+    const balance = await CheckBalance(id);
+    if (balance < totalPrice) {
+        return res.status(400).json({ message: "Insufficient Balance" });
+    }
 
     // Check if stock already exists for the user
-    const existingStock = await Stock.findOne({ id, name: symbol });
+    else {
+        const existingStock = await Stock.findOne({ id, name: symbol });
 
-    if (existingStock) {
-        // Update quantity and total price
-        existingStock.quantity += quantity;
-        existingStock.totalPrice += totalPrice;
+        if (existingStock) {
+            // Update quantity and total price
+            existingStock.quantity += quantity;
+            existingStock.totalPrice += totalPrice;
 
-        await existingStock.save();
-        res.json({ message: "Stock updated successfully!" });
-    } else {
-        // Insert new stock
-        const newStock = new Stock({
-            id,
-            name: symbol,
-            price,
-            quantity,
-            totalPrice,
-        });
+            await existingStock.save();
+            res.json({ message: "Stock updated successfully!" });
+        } else {
+            // Insert new stock
+            const newStock = new Stock({
+                id,
+                name: symbol,
+                price,
+                quantity,
+                totalPrice,
+            });
 
-        await newStock.save();
-        res.json({ message: "Stock bought and saved successfully!" });
+            await newStock.save();
+            res.json({ message: "Stock bought and saved successfully!" });
+        }
     }
 };
 

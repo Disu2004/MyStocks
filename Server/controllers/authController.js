@@ -9,15 +9,20 @@ const validateId = async (id) => {
     return !!foundUser;
 };
 
+const CheckBalance = async (id) => {
+    const foundUser = await User.findOne({ id });
+    return foundUser.balance ?? 0;
+}
+
 const register = async (req, res) => {
     try {
         const lastUser = await User.findOne().sort({ id: -1 });
         const newId = lastUser ? lastUser.id + 1 : 1;
 
-        const { name, email, password } = req.body;
+        const { name, email, password, balance } = req.body;
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-        const newUser = new User({ id: newId, name, email, password: hashedPassword });
+        const newUser = new User({ id: newId, name, email, password: hashedPassword, balance });
         await newUser.save();
 
         res.json({ message: "User saved successfully", id: newId });
@@ -44,4 +49,4 @@ const login = async (req, res) => {
     }
 };
 
-module.exports = { register, login, validateId };
+module.exports = { register, login, validateId, CheckBalance };
