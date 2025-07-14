@@ -1,4 +1,5 @@
 const Stock = require('../Schemas/stockSchema');
+const User = require('../Schemas/userSchema');
 const { validateId } = require('./authController');
 const { CheckBalance } = require('./authController');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
@@ -48,7 +49,9 @@ const buyStock = async (req, res) => {
     // Check if stock already exists for the user
     else {
         const existingStock = await Stock.findOne({ id, name: symbol });
-
+        const Updatedbalance = balance - totalPrice;
+        console.log(Updatedbalance)
+        await User.updateOne({ id }, { $set: {balance : Updatedbalance } });
         if (existingStock) {
             // Update quantity and total price
             existingStock.quantity += quantity;

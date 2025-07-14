@@ -14,6 +14,23 @@ const CheckBalance = async (id) => {
     return foundUser.balance ?? 0;
 }
 
+const userProfile = async (req, res) => {
+    const id = Number(req.params.id);  // from URL
+
+    try {
+        const foundUser = await User.findOne({ id }, { password: 0 }); // hide password
+        if (!foundUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.json(foundUser);
+    } catch (error) {
+        console.error("Error in userProfile:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+
+
 const register = async (req, res) => {
     try {
         const lastUser = await User.findOne().sort({ id: -1 });
@@ -49,4 +66,4 @@ const login = async (req, res) => {
     }
 };
 
-module.exports = { register, login, validateId, CheckBalance };
+module.exports = { register, login, validateId, CheckBalance  , userProfile};
