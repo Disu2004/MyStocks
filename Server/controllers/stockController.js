@@ -41,16 +41,29 @@ const buyStock = async (req, res) => {
     const { symbol, price, quantity } = req.body;
     const totalPrice = quantity * price;
 
-    const newStock = new Stock({
-        id,
-        name: symbol,
-        price,
-        quantity,
-        totalPrice,
-    });
+    // Check if stock already exists for the user
+    const existingStock = await Stock.findOne({ id, name: symbol });
 
-    await newStock.save();
-    res.json({ message: "Stock Data saved successfully!" });
+    if (existingStock) {
+        // Update quantity and total price
+        existingStock.quantity += quantity;
+        existingStock.totalPrice += totalPrice;
+
+        await existingStock.save();
+        res.json({ message: "Stock updated successfully!" });
+    } else {
+        // Insert new stock
+        const newStock = new Stock({
+            id,
+            name: symbol,
+            price,
+            quantity,
+            totalPrice,
+        });
+
+        await newStock.save();
+        res.json({ message: "Stock bought and saved successfully!" });
+    }
 };
 
 const deleteStock = async (req, res) => {
