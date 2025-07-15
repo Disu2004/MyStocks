@@ -1,7 +1,18 @@
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const User = require('../Schemas/userSchema');
+require('dotenv').config();
 
 const SALT_ROUNDS = parseInt(process.env.SALT_ROUNDS);
+
+// TOKEN HELPERS
+const createAccessToken = (payload) => {
+    return jwt.sign(payload, process.env.ACCESS_SECRET_KEY, { expiresIn: '1d' });
+};
+
+const createRefreshToken = (payload) => {
+    return jwt.sign(payload, process.env.REFRESH_TOKEN_KEY, { expiresIn: '7d' });
+};
 
 // Validate User ID
 const validateId = async (id) => {
@@ -12,11 +23,10 @@ const validateId = async (id) => {
 const CheckBalance = async (id) => {
     const foundUser = await User.findOne({ id });
     return foundUser.balance ?? 0;
-}
+};
 
 const userProfile = async (req, res) => {
     const id = Number(req.params.id);  // from URL
-
     try {
         const foundUser = await User.findOne({ id }, { password: 0 }); // hide password
         if (!foundUser) {
@@ -29,8 +39,6 @@ const userProfile = async (req, res) => {
     }
 };
 
-
-
 const register = async (req, res) => {
     try {
         const lastUser = await User.findOne().sort({ id: -1 });
@@ -42,7 +50,16 @@ const register = async (req, res) => {
         const newUser = new User({ id: newId, name, email, password: hashedPassword, balance });
         await newUser.save();
 
-        res.json({ message: "User saved successfully", id: newId });
+        const accessToken = createAccessToken({ id: newId });
+        const refreshToken = createRefreshToken({ id: newId });
+
+        res.cookie("refreshtoken", refreshToken, {
+            httpOnly: true,
+            path: "/user/refreshtoken",
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
+        res.json({ message: "User registered successfully", id: newId, accessToken });
     } catch (err) {
         console.error('Error during registration:', err);
         res.status(500).json({ message: "Error saving User" });
@@ -55,8 +72,18 @@ const login = async (req, res) => {
         const foundUser = await User.findOne({ email });
 
         if (!foundUser) return res.status(404).json({ message: "Email not registered!" });
+
         if (await bcrypt.compare(password, foundUser.password)) {
-            return res.json({ message: "Login Success", id: foundUser.id });
+            const accessToken = createAccessToken({ id: foundUser.id });
+            const refreshToken = createRefreshToken({ id: foundUser.id });
+
+            res.cookie("refreshtoken", refreshToken, {
+                httpOnly: true,
+                path: "/user/refreshtoken",
+                maxAge: 7 * 24 * 60 * 60 * 1000
+            });
+
+            return res.json({ message: "Login Success", id: foundUser.id, accessToken });
         } else {
             return res.status(401).json({ message: "Invalid Password" });
         }
@@ -66,4 +93,42 @@ const login = async (req, res) => {
     }
 };
 
-module.exports = { register, login, validateId, CheckBalance  , userProfile};
+// REFRESH TOKEN CONTROLLER
+const refreshToken = (req, res) => {
+    try {
+        const refToken = req.cookies.refreshtoken;
+        if (!refToken) return res.status(401).json({ message: "Please login or register" });
+
+        jwt.verify(refToken, process.env.REFRESH_TOKEN_KEY, (err, user) => {
+            if (err) return res.status(403).json({ message: "Invalid or expired token" });
+
+            const accessToken = createAccessToken({ id: user.id });
+            res.json({ accessToken });
+        });
+    } catch (err) {
+        console.error("Refresh token error:", err);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+// LOGOUT
+const logout = async (req, res) => {
+    try {
+        res.clearCookie("refreshtoken", {
+            path: "/user/refreshtoken"
+        });
+        res.json({ message: "Logged out successfully" });
+    } catch (err) {
+        res.status(500).json({ message: "Logout error" });
+    }
+};
+
+module.exports = {
+    register,
+    login,
+    refreshToken,
+    logout,
+    validateId,
+    CheckBalance,
+    userProfile
+};
