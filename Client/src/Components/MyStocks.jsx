@@ -6,7 +6,6 @@ const MyStocks = () => {
   const { id } = useParams();
   const [stocks, setStocks] = useState([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     fetch(`https://backend-jdr1.onrender.com/mystocks/${id}`, {
       method: 'GET',

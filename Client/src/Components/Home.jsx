@@ -1,91 +1,128 @@
 import React, { useEffect, useState } from 'react';
 import './CSS/Home.css';
-import { useParams } from 'react-router';
 
 const Home = () => {
-    const { id } = useParams();
-    const symbols = [
-        'AAPL', 'MSFT'
-    ];
+  const symbols = ['AAPL', 'MSFT'];
+  const [prices, setPrices] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState(null);
 
-    const [prices, setPrices] = useState({});
-    const [loading, setLoading] = useState(true);   
-    const token = localStorage.getItem("accessToken")
-    console.log(token)
-    useEffect(() => {
-        const fetchPrices = async () => {
-            const temp = {};
-            for (const symbol of symbols) {
-                try {
-                    const res = await fetch(`https://backend-jdr1.onrender.com/api/stock/${symbol}`);
-                    const priceData = await res.json(); // <-- this is an object
-                    temp[symbol] = priceData.price ?? 'N/A'; // <-- fix here
-                } catch (err) {
-                    console.error(`Error fetching ${symbol}:`, err);
-                    temp[symbol] = 'Error';
-                }
-            }
-            setPrices(temp);
-            setLoading(false);
-        };
+  const token = localStorage.getItem("accessToken");
 
-        fetchPrices();
-    }, []);
-
-    const handleBuy = (symbol) => {
-        const price = prices[symbol];
-        const input = prompt(`Enter quantity for ${symbol}:`);
-        const quantity = parseInt(input);
-
-        if (isNaN(quantity) || quantity <= 0) {
-            alert("Please enter a valid quantity.");
-            return;
+  // ✅ Fetch user ID once and store it
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        if (!token) {
+          setLoading(false);
+          return;
         }
 
-        const stockData = {
-            name: symbol,
-            price: Number(price),
-            quantity: quantity
-        };
+        const res = await fetch("https://backend-jdr1.onrender.com/getuser", {
+          method: "GET",
+          headers: {
+            "Authorization": token,
+          },
+        });
 
-        console.log("Buying stock:", stockData);
-        fetch(`https://backend-jdr1.onrender.com/buy/stock/${id}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                symbol,
-                price: Number(price),
-                quantity
-            })
-        })
-            .then((res) => res.json())
-            .then((data) => alert(data.message))
-            .catch((err) => console.log(err))
+        const data = await res.json();
+        console.log("Fetched user:", data);
+        if (data.user?.id) setUserId(data.user.id);
+      } catch (err) {
+        console.error("Error fetching user:", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    return (
-        <div className="home-container">
-            <h2>Live Stock Prices</h2>
-            {loading ? (
-                <p>Loading stock data...</p>
-            ) : (
-                <div className="stock-grid">
-                    {symbols.map(symbol => (
-                        <div key={symbol} className="stock-card">
-                            <div className="stock-symbol">{symbol}</div>
-                            <div className="stock-price">₹ {prices[symbol]}</div>
-                            <button
-                                style={{ backgroundColor: "green", color: "white" }}
-                                onClick={() => handleBuy(symbol)}
-                            >
-                                Buy This Stock
-                            </button>
-                        </div>
-                    ))}
-                </div>
-            )}
+    fetchProfile();
+  }, [token]);
+
+  // ✅ Fetch stock prices
+  useEffect(() => {
+    const fetchPrices = async () => {
+      const temp = {};
+      for (const symbol of symbols) {
+        try {
+          const res = await fetch(`https://backend-jdr1.onrender.com/api/stock/${symbol}`);
+          const priceData = await res.json();
+          temp[symbol] = priceData.price ?? 'N/A';
+        } catch (err) {
+          console.error(`Error fetching ${symbol}:`, err);
+          temp[symbol] = 'Error';
+        }
+      }
+      setPrices(temp);
+    };
+
+    fetchPrices();
+  }, []);
+
+  // ✅ Buy stock
+  const handleBuy = async (symbol) => {
+    if (!userId) {
+      alert("User ID not found. Please log in.");
+      return;
+    }
+
+    const price = prices[symbol];
+    const input = prompt(`Enter quantity for ${symbol}:`);
+    const quantity = parseInt(input);
+
+    if (isNaN(quantity) || quantity <= 0) {
+      alert("Please enter a valid quantity.");
+      return;
+    }
+
+    const stockData = {
+      symbol,
+      price: Number(price),
+      quantity,
+    };
+
+    console.log("Buying stock:", stockData);
+
+    try {
+      const res = await fetch(`https://backend-jdr1.onrender.com/buy/stock/${userId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token
+        },
+        body: JSON.stringify(stockData)
+      });
+
+      const data = await res.json();
+      alert(data.message || "Stock purchase completed");
+    } catch (err) {
+      console.error("Error during stock purchase:", err);
+      alert("Failed to buy stock.");
+    }
+  };
+
+  return (
+    <div className="home-container">
+      <h2>Live Stock Prices</h2>
+      {loading ? (
+        <p>Loading stock data...</p>
+      ) : (
+        <div className="stock-grid">
+          {symbols.map(symbol => (
+            <div key={symbol} className="stock-card">
+              <div className="stock-symbol">{symbol}</div>
+              <div className="stock-price">₹ {prices[symbol]}</div>
+              <button
+                style={{ backgroundColor: "green", color: "white" }}
+                onClick={() => handleBuy(symbol)}
+              >
+                Buy This Stock
+              </button>
+            </div>
+          ))}
         </div>
-    );
+      )}
+    </div>
+  );
 };
 
 export default Home;

@@ -5,7 +5,6 @@ const Logout = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Call the logout API
     fetch('https://backend-jdr1.onrender.com/logout', {
       method: 'GET',
     })
