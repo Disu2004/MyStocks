@@ -9,14 +9,15 @@ const Home = () => {
     ];
 
     const [prices, setPrices] = useState({});
-    const [loading, setLoading] = useState(true);
-
+    const [loading, setLoading] = useState(true);   
+    const token = localStorage.getItem("accessToken")
+    console.log(token)
     useEffect(() => {
         const fetchPrices = async () => {
             const temp = {};
             for (const symbol of symbols) {
                 try {
-                    const res = await fetch(`http://localhost:8000/api/stock/${symbol}`);
+                    const res = await fetch(`https://backend-jdr1.onrender.com/api/stock/${symbol}`);
                     const priceData = await res.json(); // <-- this is an object
                     temp[symbol] = priceData.price ?? 'N/A'; // <-- fix here
                 } catch (err) {
@@ -48,7 +49,7 @@ const Home = () => {
         };
 
         console.log("Buying stock:", stockData);
-        fetch(`http://localhost:8000/buy/stock/${id}`, {
+        fetch(`https://backend-jdr1.onrender.com/buy/stock/${id}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

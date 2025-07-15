@@ -1,24 +1,39 @@
 import React, { useEffect, useState } from 'react';
 import './CSS/Profile.css';
-import { useParams } from 'react-router-dom';
 
 const Profile = () => {
-  const { id } = useParams(); // Get the :id from the URL
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`http://localhost:8000/userprofile/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setUser(data);
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+          setLoading(false);
+          return;
+        }
+        console.log(token)
+
+        const res = await fetch("https://backend-jdr1.onrender.com/getuser", {
+          method: "GET",
+          headers: {
+            "Authorization": token,
+          },
+        });
+
+        const data = await res.json();
+        console.log(data)
+        setUser(data.user);
+      } catch (err) {
+        console.error("Error fetching user:", err);
+      } finally {
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Error fetching user:', err);
-        setLoading(false);
-      });
-  }, [id]);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   if (loading) return <div className="profile-container">Loading...</div>;
 

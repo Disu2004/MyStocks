@@ -8,7 +8,7 @@ const MyStocks = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`http://localhost:8000/mystocks/${id}`, {
+    fetch(`https://backend-jdr1.onrender.com/mystocks/${id}`, {
       method: 'GET',
     })
       .then((res) => res.json())

@@ -55,10 +55,9 @@ const register = async (req, res) => {
 
         res.cookie("refreshtoken", refreshToken, {
             httpOnly: true,
-            path: "/user/refreshtoken",
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            path: "/user/refreshtoken"
         });
-
+        console.log(accessToken)
         res.json({ message: "User registered successfully", id: newId, accessToken });
     } catch (err) {
         console.error('Error during registration:', err);
@@ -79,11 +78,13 @@ const login = async (req, res) => {
 
             res.cookie("refreshtoken", refreshToken, {
                 httpOnly: true,
-                path: "/user/refreshtoken",
-                maxAge: 7 * 24 * 60 * 60 * 1000
+                path: "/user/refreshtoken"
             });
-
-            return res.json({ message: "Login Success", id: foundUser.id, accessToken });
+            return res.json({
+                message: "Login Success",
+                id: foundUser.id,
+                accessToken
+            });
         } else {
             return res.status(401).json({ message: "Invalid Password" });
         }
@@ -123,6 +124,14 @@ const logout = async (req, res) => {
     }
 };
 
+const getUser = async (req, res) => {
+    try {
+        res.status(200).json({ user: req.user });
+    } catch (err) {
+        res.status(500).json({ message: "Something went wrong" });
+    }
+};
+
 module.exports = {
     register,
     login,
@@ -130,5 +139,6 @@ module.exports = {
     logout,
     validateId,
     CheckBalance,
-    userProfile
+    userProfile,
+    getUser
 };

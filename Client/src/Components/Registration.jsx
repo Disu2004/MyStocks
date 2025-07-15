@@ -9,7 +9,7 @@ const Registration = () => {
     const [balance, setBalance] = useState();
     const handleRegister = (e) => {
         e.preventDefault();
-        fetch('http://localhost:8000/register', {
+        fetch('https://backend-jdr1.onrender.com/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -22,7 +22,7 @@ const Registration = () => {
             .then(res => res.json()) // Convert response to JSON
             .then(data => {
                 alert(data.message);
-                navigate(`/home/${data.id}`)
+                navigate(`/home`)
             })
             .catch((err) => console.log(err))
             

@@ -8,23 +8,26 @@ const Login = () => {
     const [password, setPassword] = useState('')
     const handleLogin = (e) => {
         e.preventDefault();
-        fetch('http://localhost:8000/login', {
+        fetch('https://backend-jdr1.onrender.com/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                email,
-                password
-            })
+            body: JSON.stringify({ email, password })
         })
             .then((res) => res.json())
             .then((data) => {
                 alert(data.message);
-                if (data.message === "Login Success" && data.id) {
-                    navigate(`/home/${data.id}`);
+                if (data.message === "Login Success" && data.id && data.accessToken) {
+                    // ✅ Store the access token in localStorage
+                    localStorage.setItem("accessToken", data.accessToken);
+
+                    // ✅ Redirect to home
+                    // navigate(`/home/${data.id}`);
+                    navigate('/home')
                 }
             })
-            .catch((err) => console.log(err))
+            .catch((err) => console.log("Login error:", err));
     }
+
     return (
         <div>
             <form method='GET'>
