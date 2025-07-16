@@ -22,7 +22,10 @@ const Registration = () => {
             .then(res => res.json()) // Convert response to JSON
             .then(data => {
                 alert(data.message);
-                navigate(`/home`)
+                if(data.staus == true){
+                    navigate(`/`)
+                }
+                
             })
             .catch((err) => console.log(err))
             
