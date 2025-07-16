@@ -147,6 +147,7 @@ body {
 }
 
 .stock-grid {
+  color: black;
   display: grid;
   background: linear-gradient(135deg, #f5f7fa 0%, #8994a4 100%);
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

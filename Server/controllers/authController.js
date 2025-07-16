@@ -22,7 +22,7 @@ const createRefreshToken = (payload) => {
 // ------------------------
 
 const validateId = async (id) => {
-    console.log(id)
+    
     if (isNaN(id)) return false; // Prevent CastError
     const foundUser = await User.findOne({ id: Number(id) });
     return !!foundUser;

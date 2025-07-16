@@ -10,6 +10,7 @@ const Profile = () => {
       try {
         const token = localStorage.getItem("accessToken");
         if (!token) {
+          Navigate('/')
           setLoading(false);
           return;
         }

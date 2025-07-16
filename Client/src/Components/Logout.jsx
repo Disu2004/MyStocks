@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { replace, useNavigate } from 'react-router';
 
 const Logout = () => {
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ const Logout = () => {
       .then((data) => {
         alert(data.message);
         localStorage.removeItem("accessToken"); // clear token if stored
-        navigate('/');
+        navigate('/',{replace:true});
       })
       .catch((err) => {
         console.error(err);

@@ -7,34 +7,47 @@ import {
   CircularProgress,
   Container
 } from '@mui/material';
+import { useNavigate } from 'react-router';
 
 const MyStocks = () => {
+  const navigate = useNavigate();
   const [stocks, setStocks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // set whethere it is still loading or not
+  const [authChecked, setAuthChecked] = useState(false);
   const [userId, setUserId] = useState(null);
 
   const token = localStorage.getItem("accessToken");
 
-  // Get user ID from token
   useEffect(() => {
     const fetchUserId = async () => {
-      if (!token) return;
+      if (!token) {
+        navigate('/');
+        return;
+      }
 
       try {
         const res = await fetch("https://backend-jdr1.onrender.com/getuser", {
           headers: { Authorization: token }
         });
         const data = await res.json();
-        if (data?.user?.id) setUserId(data.user.id);
+
+        if (data?.user?.id) {
+          setUserId(data.user.id);
+        } else {
+          
+          navigate('/');
+        }
       } catch (err) {
         console.error("Failed to fetch user:", err);
+        navigate('/');
+      } finally {
+        setAuthChecked(true); // Done checking auth
       }
     };
 
     fetchUserId();
-  }, [token]);
+  }, [token, navigate]);
 
-  // Fetch stocks using userId
   useEffect(() => {
     if (!userId) return;
 
@@ -55,11 +68,10 @@ const MyStocks = () => {
     fetchStocks();
   }, [userId, token]);
 
-  // Handle stock sell
   const handleSell = async (stockName, availableQty) => {
     const input = window.prompt(`You own ${availableQty} shares of ${stockName}. How many would you like to sell?`);
-
     const quantityToSell = parseInt(input);
+
     if (isNaN(quantityToSell) || quantityToSell <= 0) {
       alert("Please enter a valid quantity.");
       return;
@@ -72,7 +84,7 @@ const MyStocks = () => {
 
     try {
       const res = await fetch(`https://backend-jdr1.onrender.com/delete/${stockName}/${userId}`, {
-        method: 'POST', // Switch to POST if DELETE doesn't support body
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: token
@@ -83,7 +95,6 @@ const MyStocks = () => {
       const data = await res.json();
       alert(data.message);
 
-      // Refresh stock list (or remove stock from UI if fully sold)
       setStocks((prev) =>
         prev
           .map((s) => {
@@ -100,6 +111,14 @@ const MyStocks = () => {
     }
   };
 
+  // Show full-screen loader until auth check finishes
+  if (!authChecked) {
+    return (
+      <Grid container justifyContent="center" alignItems="center" style={{ height: '100vh' }}>
+        <CircularProgress />
+      </Grid>
+    );
+  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 5 }}>
@@ -134,7 +153,6 @@ const MyStocks = () => {
                 >
                   Sell This Stock
                 </Button>
-
               </Paper>
             </Grid>
           ))}
