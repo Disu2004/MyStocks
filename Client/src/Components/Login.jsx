@@ -1,12 +1,13 @@
-import React from 'react'
+import React, { useState } from 'react';
 import './CSS/Form.css';
-import { useState } from 'react';
 import { useNavigate } from 'react-router';
+
 const Login = () => {
-    const navigate = useNavigate()
-    const [email, setEmail] = useState('')
+    const navigate = useNavigate();
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const API_URL = import.meta.env.VITE_API_URL;
+
     const handleLogin = (e) => {
         e.preventDefault();
         fetch(`${API_URL}/login`, {
@@ -18,20 +19,16 @@ const Login = () => {
             .then((data) => {
                 alert(data.message);
                 if (data.message === "Login Success" && data.id && data.accessToken) {
-                    // ✅ Store the access token in localStorage
                     localStorage.setItem("accessToken", data.accessToken);
-
-                    // ✅ Redirect to home
-                    // navigate(`/home/${data.id}`);
-                    navigate('/home')
+                    navigate('/home');
                 }
             })
             .catch((err) => console.log("Login error:", err));
-    }
+    };
 
     return (
         <div>
-            <form method='GET'>
+            <form onSubmit={handleLogin}>
                 <div>
                     <label htmlFor="email">Email:</label>
                     <input type="email" id="email" name="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -40,10 +37,20 @@ const Login = () => {
                     <label htmlFor="password">Password:</label>
                     <input type="password" id="password" name="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
                 </div>
-                <button type="submit" onClick={handleLogin}>Login</button>
+                <button type="submit">Login</button>
             </form>
-        </div>
-    )
-}
 
-export default Login
+            <div className="register-prompt">
+                <p>
+                    Don't have an account?{' '}
+                    <span className="register-link" onClick={() => navigate('/register')}>
+                        Register here
+                    </span>
+                </p>
+            </div>
+
+        </div>
+    );
+};
+
+export default Login;

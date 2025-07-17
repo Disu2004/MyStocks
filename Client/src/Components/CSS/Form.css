@@ -24,7 +24,7 @@ label {
     font-weight: 500;
 }
 
-input{
+input {
     padding: 10px 12px;
     border: 1px solid #bbb;
     border-radius: 6px;
@@ -32,7 +32,7 @@ input{
     transition: border 0.2s;
 }
 
-input {
+input:focus {
     border-color: #0078d7;
     outline: none;
 }
@@ -52,4 +52,26 @@ button[type="submit"] {
 
 button[type="submit"]:hover {
     background: #005fa3;
+}
+
+/* Register prompt styling */
+.register-prompt {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.register-link {
+    color: #0078d7;
+    cursor: pointer;
+    font-weight: 500;
+    text-decoration: underline;
+}
+
+.register-link:hover {
+    color: #005fa3;
+}
+p{
+    color:white;
 }
