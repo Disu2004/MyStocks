@@ -12,7 +12,7 @@ import NavBar from './NavBar';
 const UserHistory = () => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const API_URL = import.meta.env.VITE_API_URL;
   const { userId, authChecked } = useAuthUser();
   const token = localStorage.getItem("accessToken");
 
@@ -21,7 +21,7 @@ const UserHistory = () => {
     console.log(userId)
     const fetchHistory = async () => {
       try {
-        const res = await fetch(`https://backend-jdr1.onrender.com/history/${userId}`, {
+        const res = await fetch(`${API_URL}/history/${userId}`, {
           headers: { Authorization: token }
         });
         const data = await res.json();

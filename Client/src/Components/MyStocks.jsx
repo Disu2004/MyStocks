@@ -16,7 +16,7 @@ const MyStocks = () => {
   const [loading, setLoading] = useState(true); // set whethere it is still loading or not
   const [authChecked, setAuthChecked] = useState(false);
   const [userId, setUserId] = useState(null);
-
+  const API_URL = import.meta.env.VITE_API_URL;
   const token = localStorage.getItem("accessToken");
 
   useEffect(() => {
@@ -27,7 +27,7 @@ const MyStocks = () => {
       }
 
       try {
-        const res = await fetch("https://backend-jdr1.onrender.com/getuser", {
+        const res = await fetch(`${API_URL}/getuser`, {
           headers: { Authorization: token }
         });
         const data = await res.json();
@@ -54,7 +54,7 @@ const MyStocks = () => {
 
     const fetchStocks = async () => {
       try {
-        const res = await fetch(`https://backend-jdr1.onrender.com/mystocks/${userId}`, {
+        const res = await fetch(`${API_URL}/mystocks/${userId}`, {
           headers: { Authorization: token }
         });
         const data = await res.json();
@@ -84,7 +84,7 @@ const MyStocks = () => {
     }
 
     try {
-      const res = await fetch(`https://backend-jdr1.onrender.com/delete/${stockName}/${userId}`, {
+      const res = await fetch(`${API_URL}/delete/${stockName}/${userId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

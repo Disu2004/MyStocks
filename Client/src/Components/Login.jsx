@@ -5,10 +5,11 @@ import { useNavigate } from 'react-router';
 const Login = () => {
     const navigate = useNavigate()
     const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
+    const [password, setPassword] = useState('');
+    const API_URL = import.meta.env.VITE_API_URL;
     const handleLogin = (e) => {
         e.preventDefault();
-        fetch('https://backend-jdr1.onrender.com/login', {
+        fetch(`${API_URL}/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })

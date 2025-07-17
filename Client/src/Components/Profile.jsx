@@ -7,13 +7,13 @@ const Profile = () => {
   const [user, setUser] = useState(null);
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(true);
-
+  const API_URL = import.meta.env.VITE_API_URL;
   const fetchProfile = async () => {
     try {
       const token = localStorage.getItem("accessToken");
       if (!token) return;
 
-      const res = await fetch("https://backend-jdr1.onrender.com/getuser", {
+      const res = await fetch(`${API_URL}/getuser`, {
         method: "GET",
         headers: {
           Authorization: token,
@@ -35,7 +35,7 @@ const Profile = () => {
 
   const handleAddBalance = async () => {
     const token = localStorage.getItem("accessToken");
-    const res = await fetch("https://backend-jdr1.onrender.com/addbalance", {
+    const res = await fetch(`${API_URL}/addbalance`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

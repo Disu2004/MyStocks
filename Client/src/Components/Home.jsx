@@ -13,7 +13,8 @@ const Home = () => {
   const [prices, setPrices] = useState({});
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
-
+  const API_URL = import.meta.env.VITE_API_URL;
+  
   useEffect(() => {
     AOS.init({ duration: 1500, once: false });
   }, []);
@@ -42,7 +43,7 @@ const Home = () => {
       const temp = {};
       for (const symbol of symbols) {
         try {
-          const res = await fetch(`https://backend-jdr1.onrender.com/api/stock/${symbol}`);
+          const res = await fetch(`${API_URL}/api/stock/${symbol}`);
           const priceData = await res.json();
           temp[symbol] = priceData.price ?? 'N/A';
         } catch (err) {
@@ -67,7 +68,7 @@ const Home = () => {
       return;
     }
 
-    fetch(`https://backend-jdr1.onrender.com/buy/stock/${userId}`, {
+    fetch(`${API_URL}/buy/stock/${userId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ symbol, price: Number(price), quantity })

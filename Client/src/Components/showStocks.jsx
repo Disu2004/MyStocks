@@ -19,7 +19,7 @@ const showStocks = () => {
                     return;
                 }
 
-                const res = await fetch("https://backend-jdr1.onrender.com/getuser", {
+                const res = await fetch(`${API_URL}/getuser`, {
                     method: "GET",
                     headers: {
                         "Authorization": token,
@@ -45,7 +45,7 @@ const showStocks = () => {
             const temp = {};
             for (const symbol of symbols) {
                 try {
-                    const res = await fetch(`https://backend-jdr1.onrender.com/api/stock/${symbol}`);
+                    const res = await fetch(`${API_URL}/api/stock/${symbol}`);
                     const priceData = await res.json();
                     temp[symbol] = priceData.price ?? 'N/A';
                 } catch (err) {
@@ -84,7 +84,7 @@ const showStocks = () => {
         console.log("Buying stock:", stockData);
 
         try {
-            const res = await fetch(`https://backend-jdr1.onrender.com/buy/stock/${userId}`, {
+            const res = await fetch(`${API_URL}/buy/stock/${userId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
