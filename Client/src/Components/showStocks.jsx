@@ -9,7 +9,7 @@ const showStocks = () => {
     const [userId, setUserId] = useState(null);
 
     const token = localStorage.getItem("accessToken");
-
+    const API_URL = import.meta.env.VITE_API_URL;
     // ✅ Fetch user ID once and store it
     useEffect(() => {
         const fetchProfile = async () => {
