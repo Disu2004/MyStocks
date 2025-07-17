@@ -36,3 +36,28 @@ body {
 .profile-card strong {
   color: #58a6ff; /* accent light blue */
 }
+.add-balance {
+  margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.add-balance input {
+  padding: 0.5rem;
+  width: 150px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.add-balance button {
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: white;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+.add-balance button:hover {
+  background-color: #0056b3;
+}

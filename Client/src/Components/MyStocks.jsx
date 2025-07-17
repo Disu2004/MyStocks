@@ -8,6 +8,7 @@ import {
   Container
 } from '@mui/material';
 import { useNavigate } from 'react-router';
+import NavBar from './NavBar';
 
 const MyStocks = () => {
   const navigate = useNavigate();
@@ -34,7 +35,7 @@ const MyStocks = () => {
         if (data?.user?.id) {
           setUserId(data.user.id);
         } else {
-          
+
           navigate('/');
         }
       } catch (err) {
@@ -84,7 +85,7 @@ const MyStocks = () => {
 
     try {
       const res = await fetch(`https://backend-jdr1.onrender.com/delete/${stockName}/${userId}`, {
-        method: 'POST',
+        method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           Authorization: token
@@ -121,44 +122,47 @@ const MyStocks = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 5 }}>
-      <Typography variant="h4" align="center" gutterBottom>
-        My Purchased Stocks
-      </Typography>
-
-      {loading ? (
-        <Grid container justifyContent="center">
-          <CircularProgress />
-        </Grid>
-      ) : stocks.length === 0 ? (
-        <Typography align="center" color="text.secondary">
-          No stocks found.
+    <>
+      <NavBar />
+      <Container maxWidth="lg" sx={{ mt: 5 }}>
+        <Typography variant="h4" align="center" gutterBottom>
+          My Purchased Stocks
         </Typography>
-      ) : (
-        <Grid container spacing={3}>
-          {stocks.map((stock, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
-              <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-                <Typography variant="h6" gutterBottom>
-                  {stock.name}
-                </Typography>
-                <Typography>Price: ₹{stock.price}</Typography>
-                <Typography>Quantity: {stock.quantity}</Typography>
-                <Typography>Total: ₹{(stock.price * stock.quantity).toFixed(2)}</Typography>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  sx={{ mt: 2 }}
-                  onClick={() => handleSell(stock.name, stock.quantity)}
-                >
-                  Sell This Stock
-                </Button>
-              </Paper>
-            </Grid>
-          ))}
-        </Grid>
-      )}
-    </Container>
+
+        {loading ? (
+          <Grid container justifyContent="center">
+            <CircularProgress />
+          </Grid>
+        ) : stocks.length === 0 ? (
+          <Typography align="center" color="text.secondary">
+            No stocks found.
+          </Typography>
+        ) : (
+          <Grid container spacing={3}>
+            {stocks.map((stock, index) => (
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+                  <Typography variant="h6" gutterBottom>
+                    {stock.name}
+                  </Typography>
+                  <Typography>Price: ₹{stock.price}</Typography>
+                  <Typography>Quantity: {stock.quantity}</Typography>
+                  <Typography>Total: ₹{(stock.price * stock.quantity).toFixed(2)}</Typography>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    sx={{ mt: 2 }}
+                    onClick={() => handleSell(stock.name, stock.quantity)}
+                  >
+                    Sell This Stock
+                  </Button>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+      </Container>
+    </>
   );
 };
 

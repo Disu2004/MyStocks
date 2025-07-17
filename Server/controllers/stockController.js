@@ -2,6 +2,7 @@ const Stock = require('../Schemas/stockSchema');
 const User = require('../Schemas/userSchema');
 const UserHistory = require('../Schemas/userHistorySchema');
 const { validateId, CheckBalance } = require('./authController');
+const userHistorySchema = require('../Schemas/userHistorySchema');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 const TWELVE_DATA_API_KEY = process.env.TWELVE_DATA_API_KEY;
@@ -40,7 +41,7 @@ const getStockPrice = async (req, res) => {
         if (data.status === "error") {
             return res.status(400).json({ error: data.message });
         }
-
+        console.log(data.price)
         res.json({ symbol, price: data.price });
     } catch (err) {
         console.error("Fetch error:", err);
@@ -124,18 +125,30 @@ const deleteStock = async (req, res) => {
             return res.status(400).json({ message: "You can't sell more than you own" });
         }
 
-        const pricePerStock = stock.price;
-        const totalRefund = pricePerStock * quantityToSell;
+        // Fetch current live price (you may also choose to use req.body.price)
+        const url = `https://api.twelvedata.com/price?symbol=${symbol}&apikey=${TWELVE_DATA_API_KEY}`;
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.status === "error") {
+            return res.status(400).json({ error: data.message });
+        }
+
+        const currentPrice = parseFloat(data.price);
+        const avgBuyPrice = stock.totalPrice / stock.quantity;
+        const profitPerShare = currentPrice - avgBuyPrice;
+        const totalProfit = profitPerShare * quantityToSell;
+        const totalRefund = currentPrice * quantityToSell;
+
         const balance = await CheckBalance(id);
         const updatedBalance = balance + totalRefund;
-
         await User.updateOne({ id }, { $set: { balance: updatedBalance } });
 
         if (quantityToSell === stock.quantity) {
             await Stock.deleteOne({ _id: stock._id });
         } else {
             stock.quantity -= quantityToSell;
-            stock.totalPrice = stock.quantity * stock.price;
+            stock.totalPrice = stock.quantity * avgBuyPrice;
             await stock.save();
         }
 
@@ -143,18 +156,40 @@ const deleteStock = async (req, res) => {
             userId: id,
             symbol,
             action: 'sell',
-            price: pricePerStock,
+            price: currentPrice,
+            profit: totalProfit,
             quantity: quantityToSell,
-            total: totalRefund
+            total: totalRefund,
+            buyPrice: avgBuyPrice // 👈 Add this line
         });
+
         await historyEntry.save();
 
-        res.json({ message: `${quantityToSell} ${symbol} shares sold successfully.` });
+        res.json({ message: `${quantityToSell} ${symbol} shares sold successfully.`, profit: totalProfit.toFixed(2) });
     } catch (err) {
         console.error("Delete error:", err);
         res.status(500).json({ message: "Failed to process stock sell request" });
     }
 };
+
+const userHistory = async (req, res) => {
+    const id = req.params.id;
+
+    // ✅ Validate user ID
+    if (!(await validateId(id))) {
+        return res.status(404).json({ message: "Invalid User ID" });
+    }
+
+    try {
+        // ✅ Fetch user transaction history
+        const history = await userHistorySchema.find({ userId: id });
+        res.json(history);
+    } catch (err) {
+        console.error("Error fetching user history:", err);
+        res.status(500).json({ message: "Failed to fetch user history" });
+    }
+};
+
 
 // ------------------------
 // 📦 Export Controller
@@ -164,5 +199,6 @@ module.exports = {
     getUserStocks,
     getStockPrice,
     buyStock,
-    deleteStock
+    deleteStock,
+    userHistory
 };

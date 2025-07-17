@@ -1,23 +1,43 @@
 import React, { useEffect, useState } from 'react';
 import NavBar from './NavBar';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import './CSS/Home.css';
-import { useNavigate, useParams } from 'react-router';
+import { useNavigate } from 'react-router-dom';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
+import Footer from './Footer';
 
 const Home = () => {
-  const navigate = useNavigate()
-  // const { id } = useParams();
-  const symbols = ['AAPL', 'MSFT'];
+  const navigate = useNavigate();
+  const symbols = ['AAPL', 'MSFT', 'TSLA', 'GOOGL', 'AMZN', 'NVDA'];
   const [prices, setPrices] = useState({});
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("accessToken");
-  const user = jwtDecode(token)
-  const id = user.id;
+  const [userId, setUserId] = useState(null);
+
   useEffect(() => {
-    if (!token || token==null) {
+    AOS.init({ duration: 1500, once: false });
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+
+    if (!token) {
       navigate('/');
       return;
-    } 
+    }
+
+    try {
+      const user = jwtDecode(token);
+      setUserId(user.id);
+    } catch (error) {
+      console.error("Invalid token:", error);
+      navigate('/');
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!userId) return;
+
     const fetchPrices = async () => {
       const temp = {};
       for (const symbol of symbols) {
@@ -35,7 +55,7 @@ const Home = () => {
     };
 
     fetchPrices();
-  }, []);
+  }, [userId]);
 
   const handleBuy = (symbol) => {
     const price = prices[symbol];
@@ -47,7 +67,7 @@ const Home = () => {
       return;
     }
 
-    fetch(`https://backend-jdr1.onrender.com/buy/stock/${id}`, {
+    fetch(`https://backend-jdr1.onrender.com/buy/stock/${userId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ symbol, price: Number(price), quantity })
@@ -59,265 +79,115 @@ const Home = () => {
 
   return (
     <>
+      <NavBar />
 
-      {/* Converted Homepage Sections */}
-      <section className="hero fade-in">
+      {/* Hero Section */}
+      <section className="hero fade-in" data-aos="fade-up">
         <div className="hero-content">
           <h1>Trade Smarter, Not Harder</h1>
           <p>Experience the future of stock trading with real-time data, advanced analytics, and seamless execution.</p>
           <div className="hero-buttons">
-            <a href="#" className="btn btn-primary btn-large">Start Trading</a>
-            <a href="#" className="btn btn-secondary btn-large">Learn More</a>
+            <a href="/stocks" className="btn btn-primary btn-large">Start Trading</a>
+            <a href="/about" className="btn btn-secondary btn-large">Learn More</a>
           </div>
         </div>
       </section>
 
-
-      <div className="home-container">
+      {/* Live Stock Prices */}
+      <div className="home-container" data-aos="fade-up">
         <h2>Live Stock Prices</h2>
         {loading ? (
           <p>Loading stock data...</p>
         ) : (
           <div className="stock-grid">
-            {symbols.map(symbol => (
-              <div key={symbol} className="stock-card">
+            {symbols.map((symbol, i) => (
+              <div key={symbol} className="stock-card" data-aos="zoom-in" data-aos-delay={i * 100}>
                 <div className="stock-symbol">{symbol}</div>
                 <div className="stock-price">₹ {prices[symbol]}</div>
-                <button onClick={() => handleBuy(symbol)}>
-                  Buy This Stock
-                </button>
+                <button onClick={() => handleBuy(symbol)}>Buy This Stock</button>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      <section className="market-overview">
+      {/* Market Overview */}
+      <section className="market-overview" data-aos="fade-up">
         <div className="container">
           <h2 className="section-title">Market Overview</h2>
           <div className="market-stats">
-            <div className="stat-card">
-              <div className="stat-icon">
-                <i className="fas fa-chart-line"></i>
+            {[
+              { title: "S&P 500", value: "4,567.89", change: "+23.45 (0.52%)", positive: true },
+              { title: "NASDAQ", value: "14,234.56", change: "+89.12 (0.63%)", positive: true },
+              { title: "DOW JONES", value: "34,567.89", change: "-45.67 (0.13%)", positive: false },
+              { title: "VIX", value: "18.45", change: "+0.23 (1.26%)", positive: true }
+            ].map((item, i) => (
+              <div key={i} className="stat-card" data-aos="flip-left" data-aos-delay={i * 100}>
+                <div className="stat-icon"><i className={`fas ${item.positive ? 'fa-arrow-up' : 'fa-arrow-down'}`}></i></div>
+                <div className="stat-title">{item.title}</div>
+                <div className={`stat-value ${item.positive ? 'positive' : 'negative'}`}>{item.value}</div>
+                <div className={`stat-change ${item.positive ? 'positive' : 'negative'}`}>
+                  <i className={`fas ${item.positive ? 'fa-arrow-up' : 'fa-arrow-down'}`}></i> {item.change}
+                </div>
               </div>
-              <div className="stat-title">S&amp;P 500</div>
-              <div className="stat-value positive">4,567.89</div>
-              <div className="stat-change positive">
-                <i className="fas fa-arrow-up"></i> +23.45 (0.52%)
-              </div>
-            </div>
-
-            <div className="stat-card">
-              <div className="stat-icon">
-                <i className="fas fa-industry"></i>
-              </div>
-              <div className="stat-title">NASDAQ</div>
-              <div className="stat-value positive">14,234.56</div>
-              <div className="stat-change positive">
-                <i className="fas fa-arrow-up"></i> +89.12 (0.63%)
-              </div>
-            </div>
-
-            <div className="stat-card">
-              <div className="stat-icon">
-                <i className="fas fa-building"></i>
-              </div>
-              <div className="stat-title">DOW JONES</div>
-              <div className="stat-value negative">34,567.89</div>
-              <div className="stat-change negative">
-                <i className="fas fa-arrow-down"></i> -45.67 (0.13%)
-              </div>
-            </div>
-
-            <div className="stat-card">
-              <div className="stat-icon">
-                <i className="fas fa-dollar-sign"></i>
-              </div>
-              <div className="stat-title">VIX</div>
-              <div className="stat-value">18.45</div>
-              <div className="stat-change positive">
-                <i className="fas fa-arrow-up"></i> +0.23 (1.26%)
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="top-stocks">
+      {/* Top Performers */}
+      <section className="top-stocks" data-aos="fade-up">
         <div className="container">
           <h2 className="section-title">Top Performers</h2>
           <div className="stocks-grid">
-
-            <div className="stock-card">
-              <div className="stock-header">
-                <div>
-                  <div className="stock-symbol">AAPL</div>
-                  <div className="stock-name">Apple Inc.</div>
+            {[
+              { symbol: 'AAPL', name: 'Apple Inc.', price: '$175.43', change: '+2.14 (1.23%)', positive: true },
+              { symbol: 'TSLA', name: 'Tesla Inc.', price: '$248.52', change: '+5.18 (2.13%)', positive: true },
+              { symbol: 'GOOGL', name: 'Alphabet Inc.', price: '$2,789.65', change: '+22.34 (0.81%)', positive: true },
+              { symbol: 'MSFT', name: 'Microsoft Corp.', price: '$334.89', change: '-1.02 (0.30%)', positive: false },
+              { symbol: 'AMZN', name: 'Amazon.com Inc.', price: '$3,234.78', change: '+16.23 (0.50%)', positive: true },
+              { symbol: 'NVDA', name: 'NVIDIA Corp.', price: '$456.78', change: '+8.92 (1.99%)', positive: true },
+            ].map((stock, i) => (
+              <div key={i} className="stock-card" data-aos="fade-up" data-aos-delay={i * 100}>
+                <div className="stock-header">
+                  <div>
+                    <div className="stock-symbol">{stock.symbol}</div>
+                    <div className="stock-name">{stock.name}</div>
+                  </div>
+                  <div className={`stock-price ${stock.positive ? 'positive' : 'negative'}`}>{stock.price}</div>
                 </div>
-                <div className="stock-price positive">$175.43</div>
-              </div>
-              <div className="stock-change positive">
-                <i className="fas fa-arrow-up"></i> +2.14 (1.23%)
-              </div>
-            </div>
-
-            <div className="stock-card">
-              <div className="stock-header">
-                <div>
-                  <div className="stock-symbol">TSLA</div>
-                  <div className="stock-name">Tesla Inc.</div>
+                <div className={`stock-change ${stock.positive ? 'positive' : 'negative'}`}>
+                  <i className={`fas ${stock.positive ? 'fa-arrow-up' : 'fa-arrow-down'}`}></i> {stock.change}
                 </div>
-                <div className="stock-price positive">$248.52</div>
               </div>
-              <div className="stock-change positive">
-                <i className="fas fa-arrow-up"></i> +5.18 (2.13%)
-              </div>
-            </div>
-
-            <div className="stock-card">
-              <div className="stock-header">
-                <div>
-                  <div className="stock-symbol">GOOGL</div>
-                  <div className="stock-name">Alphabet Inc.</div>
-                </div>
-                <div className="stock-price positive">$2,789.65</div>
-              </div>
-              <div className="stock-change positive">
-                <i className="fas fa-arrow-up"></i> +22.34 (0.81%)
-              </div>
-            </div>
-
-            <div className="stock-card">
-              <div className="stock-header">
-                <div>
-                  <div className="stock-symbol">MSFT</div>
-                  <div className="stock-name">Microsoft Corp.</div>
-                </div>
-                <div className="stock-price negative">$334.89</div>
-              </div>
-              <div className="stock-change negative">
-                <i className="fas fa-arrow-down"></i> -1.02 (0.30%)
-              </div>
-            </div>
-
-            <div className="stock-card">
-              <div className="stock-header">
-                <div>
-                  <div className="stock-symbol">AMZN</div>
-                  <div className="stock-name">Amazon.com Inc.</div>
-                </div>
-                <div className="stock-price positive">$3,234.78</div>
-              </div>
-              <div className="stock-change positive">
-                <i className="fas fa-arrow-up"></i> +16.23 (0.50%)
-              </div>
-            </div>
-
-            <div className="stock-card">
-              <div className="stock-header">
-                <div>
-                  <div className="stock-symbol">NVDA</div>
-                  <div className="stock-name">NVIDIA Corp.</div>
-                </div>
-                <div className="stock-price positive">$456.78</div>
-              </div>
-              <div className="stock-change positive">
-                <i className="fas fa-arrow-up"></i> +8.92 (1.99%)
-              </div>
-            </div>
-
+            ))}
           </div>
         </div>
       </section>
 
-
-      <section className="features">
+      {/* Features */}
+      <section className="features" data-aos="fade-up">
         <div className="container">
           <h2 className="section-title">Why Choose MyStocks?</h2>
           <div className="features-grid">
-
-            <div className="feature-card">
-              <div className="feature-icon">
-                <i className="fas fa-bolt"></i>
+            {[
+              { icon: 'fa-bolt', title: 'Real-Time Trading', desc: 'Execute trades instantly with real-time market data and lightning-fast order processing.' },
+              { icon: 'fa-shield-alt', title: 'Secure & Reliable', desc: 'Your investments are protected with bank-level security and 24/7 monitoring.' },
+              { icon: 'fa-chart-bar', title: 'Advanced Analytics', desc: 'Make informed decisions with comprehensive market analysis and trading tools.' },
+              { icon: 'fa-mobile-alt', title: 'Mobile Trading', desc: 'Trade on the go with our responsive mobile platform available 24/7.' },
+              { icon: 'fa-graduation-cap', title: 'Educational Resources', desc: 'Learn from experts with our comprehensive trading guides and market insights.' },
+              { icon: 'fa-headset', title: '24/7 Support', desc: 'Get help whenever you need it with our dedicated customer support team.' },
+            ].map((feature, i) => (
+              <div key={i} className="feature-card" data-aos="fade-up" data-aos-delay={i * 100}>
+                <div className="feature-icon"><i className={`fas ${feature.icon}`}></i></div>
+                <h3 className="feature-title">{feature.title}</h3>
+                <p className="feature-description">{feature.desc}</p>
               </div>
-              <h3 className="feature-title">Real-Time Trading</h3>
-              <p className="feature-description">
-                Execute trades instantly with real-time market data and lightning-fast order processing.
-              </p>
-            </div>
-
-            <div className="feature-card">
-              <div className="feature-icon">
-                <i className="fas fa-shield-alt"></i>
-              </div>
-              <h3 className="feature-title">Secure &amp; Reliable</h3>
-              <p className="feature-description">
-                Your investments are protected with bank-level security and 24/7 monitoring.
-              </p>
-            </div>
-
-            <div className="feature-card">
-              <div className="feature-icon">
-                <i className="fas fa-chart-bar"></i>
-              </div>
-              <h3 className="feature-title">Advanced Analytics</h3>
-              <p className="feature-description">
-                Make informed decisions with comprehensive market analysis and trading tools.
-              </p>
-            </div>
-
-            <div className="feature-card">
-              <div className="feature-icon">
-                <i className="fas fa-mobile-alt"></i>
-              </div>
-              <h3 className="feature-title">Mobile Trading</h3>
-              <p className="feature-description">
-                Trade on the go with our responsive mobile platform available 24/7.
-              </p>
-            </div>
-
-            <div className="feature-card">
-              <div className="feature-icon">
-                <i className="fas fa-graduation-cap"></i>
-              </div>
-              <h3 className="feature-title">Educational Resources</h3>
-              <p className="feature-description">
-                Learn from experts with our comprehensive trading guides and market insights.
-              </p>
-            </div>
-
-            <div className="feature-card">
-              <div className="feature-icon">
-                <i className="fas fa-headset"></i>
-              </div>
-              <h3 className="feature-title">24/7 Support</h3>
-              <p className="feature-description">
-                Get help whenever you need it with our dedicated customer support team.
-              </p>
-            </div>
-
+            ))}
           </div>
         </div>
       </section>
-
-
-      <footer className="footer">
-        <div className="footer-content">
-          <div className="footer-section">
-            <h3>Trading</h3>
-            <ul>
-              <li><a href="#">Stocks</a></li>
-              <li><a href="#">Options</a></li>
-              <li><a href="#">ETFs</a></li>
-              <li><a href="#">Futures</a></li>
-            </ul>
-          </div>
-          {/* Add more footer sections... */}
-        </div>
-        <div className="footer-bottom">
-          <p>&copy; 2025 MyStocks. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer/>
     </>
   );
 };

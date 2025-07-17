@@ -1,7 +1,9 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import NavBar from './NavBar';
+
 
 const showStocks = () => {
-    const symbols = ['AAPL', 'MSFT'];
+    const symbols = ['AAPL', 'MSFT', 'TSLA', 'GOOGL', 'AMZN', 'NVDA'];
     const [prices, setPrices] = useState({});
     const [loading, setLoading] = useState(true);
     const [userId, setUserId] = useState(null);
@@ -100,27 +102,31 @@ const showStocks = () => {
     };
 
     return (
-        <div className="home-container">
-            <h2>Live Stock Prices</h2>
-            {loading ? (
-                <p>Loading stock data...</p>
-            ) : (
-                <div className="stock-grid">
-                    {symbols.map(symbol => (
-                        <div key={symbol} className="stock-card">
-                            <div className="stock-symbol">{symbol}</div>
-                            <div className="stock-price">₹ {prices[symbol]}</div>
-                            <button
-                                style={{ backgroundColor: "green", color: "white" }}
-                                onClick={() => handleBuy(symbol)}
-                            >
-                                Buy This Stock
-                            </button>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
+        <>
+            <NavBar />
+            <div className="home-container">
+                <h2>Live Stock Prices</h2>
+                {loading ? (
+                    <p>Loading stock data...</p>
+                ) : (
+                    <div className="stock-grid">
+                        {symbols.map(symbol => (
+                            <div key={symbol} className="stock-card">
+                                <div className="stock-symbol">{symbol}</div>
+                                <div className="stock-price">₹ {prices[symbol]}</div>
+                                <button
+                                    style={{ backgroundColor: "green", color: "white" }}
+                                    onClick={() => handleBuy(symbol)}
+                                >
+                                    Buy This Stock
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+            
+        </>
     );
 }
 

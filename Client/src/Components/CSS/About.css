@@ -1,0 +1,79 @@
+.about-page {
+  background: #163453;
+  padding: 4rem 2rem;
+  min-height: 100vh;
+}
+
+.about-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  color: #333;
+  padding-top: 90px;
+}
+
+.about-title {
+  text-align: center;
+  font-size: 2.8rem;
+  margin-bottom: 2rem;
+  color: #f6faff;
+}
+
+.about-intro {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto 3rem auto;
+  color: #fcf7f7;
+}
+
+.about-grid {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.about-card {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  transition: transform 0.3s;
+}
+
+.about-card:hover {
+  transform: translateY(-5px);
+}
+
+.about-card h3 {
+  font-size: 1.5rem;
+  color: #31557f;
+  margin-bottom: 1rem;
+}
+
+.about-credits {
+  margin-top: 3rem;
+  padding: 1rem;
+  background-color: #ffffff; /* Light background */
+  text-align: center;
+  font-size: 1.1rem;
+  color: #000000; /* Dark text for visibility */
+  border-top: 1px solid #ddd;
+}
+
+.about-credits h4 {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+.about-credits ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.about-credits li {
+  margin: 6px 0;
+}
+
