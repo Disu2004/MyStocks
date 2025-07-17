@@ -41,7 +41,7 @@ const Login = () => {
             </form>
 
             <div className="register-prompt">
-                <p>
+                <p style={{color:"black"}}>
                     Don't have an account?{' '}
                     <span className="register-link" onClick={() => navigate('/register')}>
                         Register here
